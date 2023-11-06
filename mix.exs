@@ -37,7 +37,7 @@ defmodule AbsintheGraphqlWS.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:eljiffy, "> 0.0.0", only: [:bench]},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
-      {:gun, "~> 1.3", only: [:test]},
+      {:gun, "~> 2.0", only: [:test]},
       {:jason, "~> 1.2", optional: true},
       {:markdown_formatter, "~> 0.5", only: :dev, runtime: false},
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},

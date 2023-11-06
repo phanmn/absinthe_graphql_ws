@@ -214,7 +214,11 @@ defmodule Absinthe.GraphqlWS.Socket do
     opts = Module.get_attribute(env.module, :graphql_ws_socket_opts)
 
     unless Keyword.has_key?(opts, :schema) do
-      :elixir_errors.erl_warn(env.line, env.file, "#{env.module} must specify `:schema` when using Absinthe.GraphqlWS.Socket")
+      :elixir_errors.erl_warn(
+        env.line,
+        env.file,
+        "#{env.module} must specify `:schema` when using Absinthe.GraphqlWS.Socket"
+      )
     end
 
     :ok
@@ -276,7 +280,8 @@ defmodule Absinthe.GraphqlWS.Socket do
     end
   end
 
-  defmacrop debug(msg), do: quote(do: Logger.debug("[graph-socket@#{inspect(self())}] #{unquote(msg)}"))
+  defmacrop debug(msg),
+    do: quote(do: Logger.debug("[graph-socket@#{inspect(self())}] #{unquote(msg)}"))
 
   @doc false
   def new(attrs \\ []), do: __struct__(attrs)
@@ -343,6 +348,7 @@ defmodule Absinthe.GraphqlWS.Socket do
     def to_string(socket) do
       handler = Module.split(socket.handler) |> Enum.join(".")
       connect_info = Map.keys(socket.connect_info) |> inspect()
+
       "#Socket<handler=#{handler}, connect_info=#{connect_info}, keepalive=#{keepalive(socket.keepalive)}>"
     end
 

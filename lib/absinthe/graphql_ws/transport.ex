@@ -23,8 +23,11 @@ defmodule Absinthe.GraphqlWS.Transport do
   @type reply_message() :: Socket.reply_message()
   @type socket() :: Socket.t()
 
-  defmacrop debug(msg), do: quote(do: Logger.debug("[graph-socket@#{inspect(self())}] #{unquote(msg)}"))
-  defmacrop warn(msg), do: quote(do: Logger.warning("[graph-socket@#{inspect(self())}] #{unquote(msg)}"))
+  defmacrop debug(msg),
+    do: quote(do: Logger.debug("[graph-socket@#{inspect(self())}] #{unquote(msg)}"))
+
+  defmacrop warn(msg),
+    do: quote(do: Logger.warning("[graph-socket@#{inspect(self())}] #{unquote(msg)}"))
 
   @doc """
   Generally this will only receive `:pong` messages in response to our keepalive
@@ -124,13 +127,14 @@ defmodule Absinthe.GraphqlWS.Transport do
     if function_exported?(handler, :handle_init, 2) do
       case handler.handle_init(Map.get(message, "payload", %{}), socket) do
         {:ok, payload, socket} ->
-          {:reply, :ok, {:text, Message.ConnectionAck.new(payload)}, %{socket | initialized?: true}}
+          {:reply, :ok, {:text, Message.ConnectionAck.new(payload)},
+           %{socket | initialized?: true}}
 
-          {:error, socket} ->
-            close(4403, "Forbidden", socket)
+        {:error, socket} ->
+          close(4403, "Forbidden", socket)
 
-          {:error, message, socket} ->
-            close(4403, message, socket)
+        {:error, message, socket} ->
+          close(4403, message, socket)
       end
     else
       {:reply, :ok, {:text, Message.ConnectionAck.new()}, %{socket | initialized?: true}}

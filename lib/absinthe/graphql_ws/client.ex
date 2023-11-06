@@ -15,7 +15,10 @@ defmodule Absinthe.GraphqlWS.Client do
 
   def start(endpoint, init_payload \\ %{}) do
     {:ok, client} = GenServer.start(__MODULE__, endpoint: endpoint)
-    {:ok, %{"type" => "connection_ack"}} = push(client, %{type: "connection_init", payload: init_payload})
+
+    {:ok, %{"type" => "connection_ack"}} =
+      push(client, %{type: "connection_init", payload: init_payload})
+
     {:ok, client}
   end
 
@@ -26,7 +29,8 @@ defmodule Absinthe.GraphqlWS.Client do
   def init(endpoint: endpoint, monitor: monitor, transport: transport) do
     uri = URI.parse(endpoint)
 
-    with {:ok, gun_pid} <- transport.open(uri.host |> to_charlist(), uri.port, %{protocols: [:http]}),
+    with {:ok, gun_pid} <-
+           transport.open(uri.host |> to_charlist(), uri.port, %{protocols: [:http]}),
          {:ok, _protocol} <- transport.await_up(gun_pid, :timer.seconds(5)),
          stream_ref <- transport.ws_upgrade(gun_pid, uri.path),
          :ok <- wait_for_upgrade() do
@@ -71,7 +75,12 @@ defmodule Absinthe.GraphqlWS.Client do
   def handle_call({:subscribe, gql, variables, handler}, _from, %{listeners: listeners} = state) do
     id = Uuid.generate()
 
-    state.transport.ws_send(state.gun, {:text, Jason.encode!(make_message(id, gql, variables))})
+    state.transport.ws_send(
+      state.gun,
+      state.gun_stream_ref,
+      {:text, Jason.encode!(make_message(id, gql, variables))}
+    )
+
     listeners = Map.put(listeners, id, handler)
     state = Map.put(state, :listeners, listeners)
     {:reply, {:ok, id}, state}
@@ -168,7 +177,7 @@ defmodule Absinthe.GraphqlWS.Client do
 
   defp send_and_cache(id, from, message, %{queries: queries} = state) do
     # IO.inspect(message, label: "OUTBOUND")
-    state.transport.ws_send(state.gun, {:text, Jason.encode!(message)})
+    state.transport.ws_send(state.gun, state.gun_stream_ref, {:text, Jason.encode!(message)})
     queries = Map.put(queries, id, from)
     state = Map.put(state, :queries, queries)
     {:noreply, state}

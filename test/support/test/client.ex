@@ -59,7 +59,7 @@ defmodule Test.Client do
   end
 
   def handle_call({:push, %{} = message}, _from, state) do
-    :gun.ws_send(state.gun, {:text, Jason.encode!(message)})
+    :gun.ws_send(state.gun, state.gun_stream_ref, {:text, Jason.encode!(message)})
     {:reply, :ok, state}
   end
 
@@ -79,7 +79,10 @@ defmodule Test.Client do
     {:stop, reason, state}
   end
 
-  def handle_info({:gun_ws, _pid, _stream_ref, frame}, %{caller_ref: ref, timeout_ref: timeout_ref} = state)
+  def handle_info(
+        {:gun_ws, _pid, _stream_ref, frame},
+        %{caller_ref: ref, timeout_ref: timeout_ref} = state
+      )
       when not is_nil(ref) and is_reference(timeout_ref) do
     Process.cancel_timer(timeout_ref)
     GenServer.reply(ref, {:ok, [frame | state.reply_buffer]})

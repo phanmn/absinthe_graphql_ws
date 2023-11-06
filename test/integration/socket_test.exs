@@ -197,7 +197,9 @@ defmodule Absinthe.GraphqlWS.SocketTest do
   describe "on Subscribe with a subscription" do
     setup [:setup_client, :send_connection_init]
 
-    test "pushes Next messages for the subscription topic, as they are published", %{client: client} do
+    test "pushes Next messages for the subscription topic, as they are published", %{
+      client: client
+    } do
       id = "subscription"
 
       :ok =
@@ -295,7 +297,9 @@ defmodule Absinthe.GraphqlWS.SocketTest do
         client,
         %{
           "id" => "subscription-with-error",
-          "payload" => [%{"locations" => [%{"column" => 3, "line" => 2}], "message" => "subscribe error"}],
+          "payload" => [
+            %{"locations" => [%{"column" => 3, "line" => 2}], "message" => "subscribe error"}
+          ],
           "type" => "error"
         }
       )
@@ -305,7 +309,8 @@ defmodule Absinthe.GraphqlWS.SocketTest do
   describe "handle_message callbacks" do
     setup [:setup_client, :send_connection_init]
 
-    test "are called when the socket receives &handle_info/2 with a message not caught by graphql-ws", %{client: client} do
+    test "are called when the socket receives &handle_info/2 with a message not caught by graphql-ws",
+         %{client: client} do
       id = "handle-message-callback"
 
       Test.Site.TestPubSub.subscribe(:handle_message_callback)
