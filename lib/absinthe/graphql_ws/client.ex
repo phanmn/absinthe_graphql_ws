@@ -28,11 +28,16 @@ defmodule Absinthe.GraphqlWS.Client do
 
   def init(endpoint: endpoint, monitor: monitor, transport: transport) do
     uri = URI.parse(endpoint)
+    path_query = if uri.query do
+      uri.path <> "?" <> uri.query
+    else
+      uri.path
+    end
 
     with {:ok, gun_pid} <-
            transport.open(uri.host |> to_charlist(), uri.port, %{protocols: [:http]}),
          {:ok, _protocol} <- transport.await_up(gun_pid, :timer.seconds(5)),
-         stream_ref <- transport.ws_upgrade(gun_pid, uri.path),
+         stream_ref <- transport.ws_upgrade(gun_pid, path_query),
          :ok <- wait_for_upgrade() do
       ref = monitor.monitor(gun_pid)
 

@@ -314,7 +314,7 @@ defmodule Absinthe.GraphqlWS.Socket do
       schema: schema
     }
 
-    socket =
+    new_socket =
       Socket.new(
         absinthe: absinthe_config,
         connect_info: socket.connect_info,
@@ -325,8 +325,11 @@ defmodule Absinthe.GraphqlWS.Socket do
       )
 
     debug("connect: #{socket}")
-
-    {:ok, socket}
+    if function_exported?(module, :connect, 3) do
+      module.connect(socket.params, new_socket, socket.connect_info)
+    else
+      {:ok, new_socket}
+    end
   end
 
   @doc """
