@@ -9,6 +9,7 @@ defmodule Absinthe.GraphqlWS.Client do
     :gun_stream_ref,
     :monitor,
     :transport,
+    :connection_ack,
     listeners: %{},
     queries: %{}
   ]
@@ -28,11 +29,13 @@ defmodule Absinthe.GraphqlWS.Client do
 
   def init(endpoint: endpoint, monitor: monitor, transport: transport) do
     uri = URI.parse(endpoint)
-    path_query = if uri.query do
-      uri.path <> "?" <> uri.query
-    else
-      uri.path
-    end
+
+    path_query =
+      if uri.query do
+        uri.path <> "?" <> uri.query
+      else
+        uri.path
+      end
 
     with {:ok, gun_pid} <-
            transport.open(uri.host |> to_charlist(), uri.port, %{protocols: [:http]}),
@@ -130,7 +133,17 @@ defmodule Absinthe.GraphqlWS.Client do
           state.queries
       end
 
-    {:noreply, %{state | queries: new_queries, listeners: new_listeners}}
+    connection_ack =
+      case message do
+        %{"type" => "connection_ack"} ->
+          message["payload"]
+
+        _ ->
+          state.connection_ack
+      end
+
+    {:noreply,
+     %{state | queries: new_queries, listeners: new_listeners, connection_ack: connection_ack}}
   end
 
   def handle_info({:gun_ws, _pid, _stream_ref, {:close, code, payload}}, state) do
