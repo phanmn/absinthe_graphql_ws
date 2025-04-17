@@ -217,7 +217,7 @@ defmodule Absinthe.GraphqlWS.Transport do
   end
 
   defp close(code, message, socket) do
-    {:reply, :ok, {:close, code, message}, socket}
+    {:stop, :normal, {code, message}, socket}
   end
 
   defp parse_query(%{"query" => query}) when is_binary(query), do: {:ok, query}
